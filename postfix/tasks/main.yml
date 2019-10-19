@@ -1,0 +1,70 @@
+---
+- name: Install postfix
+  package:
+    name: postfix
+    state: latest
+
+- name: Create vmail group
+  group:
+    name: vmail
+    state: present
+    gid: 2222
+
+- name: Create vmail user
+  user:
+    name: vmail
+    group: vmail
+    uid: 2222
+    home: /var/vmail
+    state: present
+
+- name: Postfix - Configure main.cf
+  template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+  notify: reload postfix
+
+- name: Postfix - configure master.cf
+  template:
+    src: master.cf.j2
+    dest: /etc/postfix/master.cf
+  notify: reload postfix
+
+- name: Postscreen access
+  template:
+    src: postscreen_access.cidr.j2
+    dest: /etc/postfix/postscreen_access.cidr
+  notify: reload postfix
+
+- name: Postfix virtual alias
+  template:
+    src: virtual_alias.j2
+    dest: /etc/postfix/virtual_alias
+
+- name: Postmap virtual alias
+  shell: postmap /etc/postfix/virtual_alias
+  notify: reload postfix
+
+- name: Postfix virtual domains
+  template:
+    src: virtual_domains.j2
+    dest: /etc/postfix/virtual_domains
+  notify: reload postfix
+
+- name: Postmap virtual domains
+  shell: postmap /etc/postfix/virtual_domains
+  notify: reload postfix
+
+- name: Postfix virtual mailbox
+  template:
+    src: virtual_mailbox.j2
+    dest: /etc/postfix/virtual_mailbox
+
+- name: Postmap virtual mailbox
+  shell: postmap /etc/postfix/virtual_mailbox
+  notify: reload postfix
+
+- name: Make sure postfix is started
+  service:
+    name: postfix
+    state: started

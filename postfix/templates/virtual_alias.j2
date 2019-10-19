@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% for alias in postfix_alias %}
+{{ alias["alias"] }} {{ alias["mailbox"] }}
+{% endfor %}

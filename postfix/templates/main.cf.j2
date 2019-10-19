@@ -1,0 +1,84 @@
+# {{ ansible_managed }}
+
+#########################
+# General Configuration #
+#########################
+
+smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+readme_directory = no
+compatibility_level = 2
+
+
+# See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+# information on enabling SSL in the smtp client.
+
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+myhostname = {{ postfix_hostname }}
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = $mydomain
+mydomain = {{ postfix_domain }}
+mydestination = $myhostname, $mydomain, localhost.localdomain, localhost
+relayhost =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
+queue_directory = /var/spool/postfix
+command_directory = /usr/sbin
+data_directory = /var/lib/postfix
+mail_owner = postfix
+unknown_local_recipient_reject_code = 550
+
+#######
+# TLS #
+#######
+smtpd_tls_cert_file={{ postfix_ssl_cert }}
+smtpd_tls_key_file={{ postfix_ssl_key }}
+smtpd_use_tls=yes
+smtpd_tls_loglevel = 1
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+smtpd_tls_protocols = !SSLv2,!SSLv3
+smtpd_tls_mandatory_protocols = !SSLv2,!SSLv3
+smtpd_tls_exclude_ciphers = aNULL, RC4, EXP-RC2-CBC-MD5, EXP-DES-CBC-SHA, DES-CBC-SHA, DES-CBC3-SHA, EDH-RSA-DES-CBC-SHA, EXP-EDH-RSA-DES-CBC-SHA, SEED-SHA
+smtp_tls_security_level = may
+smtp_tls_loglevel = 1
+
+##############
+# Postscreen #
+##############
+postscreen_access_list = cidr:/etc/postfix/postscreen_access.cidr
+postscreen_blacklist_action = drop
+postscreen_dnsbl_sites = zen.spamhaus.org
+postscreen_dnsbl_threshold = 1
+postscreen_dnsbl_action = drop
+postscreen_dnsbl_ttl = 1h
+postscreen_greet_wait = 1s
+
+##############
+# Mailboxes  #
+##############
+virtual_alias_maps=hash:/etc/postfix/virtual_alias
+virtual_mailbox_domains=hash:/etc/postfix/virtual_domains
+virtual_mailbox_maps=hash:/etc/postfix/virtual_mailbox
+home_mailbox = mail/
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+#virtual_minimum_uid = 2222
+#virtual_uid_maps = static:2222
+#virtual_gid_maps = static:2222
+
+#########
+# SASL  #
+#########
+smtpd_sasl_auth_enable = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_security_options = noanonymous
+smtpd_sasl_tls_security_options = $smtpd_sasl_security_options
+smtpd_sasl_local_domain = $mydomain
+broken_sasl_auth_clients = yes

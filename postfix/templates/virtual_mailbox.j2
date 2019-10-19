@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% for mailbox in postfix_mailbox %}
+{{ mailbox["mailbox"] }} {{ mailbox["folder"] }}
+{% endfor %}

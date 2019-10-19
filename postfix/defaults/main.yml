@@ -1,0 +1,14 @@
+---
+postfix_hostname: hostname.foo.bar
+postfix_domain: foo.bar
+postfix_bind_port: 25
+postfix_ssl_cert: /etc/ssl/cert.pem
+postfix_ssl_key: /etc/ssl/key.pem
+postfix_virtual_domains:
+    - foo.bar
+postfix_alias:
+    - alias: root@foo.bar
+      mailbox: bob@foo.bar
+postfix_mailbox:
+    - mailbox: bob@foo.bar
+      folder: foo.bar/bob

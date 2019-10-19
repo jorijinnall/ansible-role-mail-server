@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: yes
+
+  pre_tasks:
+    - name: Update APT cache
+      apt: update_cache=yes
+
+#Postfix
+- name: Install postfix
+  hosts: server
+  become: yes
+  roles:
+    - postfix
+
+#Dovecot
+- name: Install dovecot
+  hosts: server
+  become: yes
+  roles:
+    - dovecot
